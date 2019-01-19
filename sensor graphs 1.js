@@ -1,12 +1,14 @@
 var $svg = d3.select("#mainSVG");
 
+var maxHistory = 1000;
+var tDuration = 200;
+
 var pointSpacing = 2;
 var lineDxDt = 5;
 var graphHeight = 50;
 var graphSpacing = 20;
 var boxPad = 3;
 var maxSample = 100;
-var maxHistory = 1000;
 
 var maxCurveH = 30;
 var curveW = 100;
@@ -171,7 +173,7 @@ function newSensorData(isLeft,samples){
     sensorHistory[lr].splice(0,0,samples);
     if (sensorHistory[lr].length > maxHistory) sensorHistory[lr].pop();
 
-    updateSensors();
+    updateSensors(tDuration);
 }
 
 // Animate gradients in sync with bumps
