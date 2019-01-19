@@ -229,3 +229,7 @@ function arrayFill(n, value, clone=true){
     if (typeof value != "object") clone=false;
     return ([...Array(n)]).map(d=>clone?Object.clone(value):value);
 }
+
+function lerp(a,b,t){
+    return a+t*(b-a);
+}
