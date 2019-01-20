@@ -1,18 +1,24 @@
 var $svg = d3.select("#mainSVG");
 
+var maxHistory = 1000;
+var tDuration = 200;
+
 var pointSpacing = 2;
 var lineDxDt = 5;
 var graphHeight = 50;
 var graphSpacing = 20;
 var boxPad = 3;
 var maxSample = 100;
-var maxHistory = 1000;
 
 var maxCurveH = 30;
 var curveW = 100;
 var tanW = .4;
 
 var dotRadius = 5;
+
+var meterW = 35;
+var meterH = 140;
+var meterSpacing = 25;
 
 var t0 = Date.now()
 var sensorHistory = {left:[], right:[]};
@@ -45,6 +51,12 @@ var rgbBump = '0,170,255'
 var rgbDot = '200,0,0';
 var rgbLine = '200,200,150';
 var circleConnections = [[0,1],[0,4],[1,4],[1,5],[4,5],[3,6],[5,6],[8,10]]
+
+// Meter color
+var rgbMeter = '220,50,18';
+var rgbTotalMeter = '220,130,30'
+
+// D3 SVG elements
 
 // Line graph boxes
 let $graphs = $svg.append('g')
@@ -99,7 +111,7 @@ $svg.append('g').attr('id','sensor-bumps')
     .attr('id',(d,i)=>'sensorBump'+i)
     .attr('fill',(d,i)=>`url(#curveGradient${i})`)
 
-// Bump points
+// Bump mesh and points
 $svg.select('#sensor-bumps')
     .append('g').attr('id','edges')
     .selectAll('path').data(circleConnections)
@@ -120,6 +132,44 @@ $svg.select('#sensor-bumps')
     .attr('fill',`rgb(${rgbDot})`).attr('r',dotRadius)
     .attr('cx',(d,i)=>bumpPos[i][0]+curveW/2)
     .attr('cy',(d,i)=>bumpPos[i][1]);
+
+// Meters
+$svg.append('g').attr('id','meters')
+    .attr('transform','translate(50, 310)')
+    .selectAll('rect').data([0,0])
+    .enter().append('rect')
+    .attr('x',(d,i)=>i*(meterW+meterSpacing))
+    .attr('y',0)
+    .attr('width',meterW)
+    .attr('height',meterH)
+    .attr('stroke',`rgba(${rgbMeter},.5)`)
+    .attr('fill',`rgba(${rgbMeter},.15)`)
+    .attr('stroke-width', 2);
+
+d3.select('#meters').append('g')
+    .attr('id','meter-levels')
+    .selectAll('rect').data([0,0])
+    .enter().append('rect')
+    .attr('x',(d,i)=>i*(meterW+meterSpacing))
+    .attr('y',meterH)
+    .attr('width',meterW)
+    .attr('fill',`rgba(${rgbMeter},.6)`)
+
+d3.select('#meters').append('g')
+    .attr('id','total-meter')
+    .attr('transform',`translate(${2*meterW+3*meterSpacing} 0)`)
+    .append('rect')
+    .attr('width',meterW*1.5)
+    .attr('height',meterH)
+    .attr('stroke',`rgba(${rgbTotalMeter},.5)`)
+    .attr('fill',`rgba(${rgbTotalMeter},.15)`)
+    .attr('stroke-width', 2);
+
+d3.select('#total-meter').append('rect')
+    .attr('id','total-level')
+    .attr('y',meterH)
+    .attr('width',meterW*1.5)
+    .attr('fill',`rgba(${rgbTotalMeter},.3)`)
 
 function updateSensors(dt=200){
     var sensorArray = currentSamples.left.concat(currentSamples.right);
@@ -159,6 +209,23 @@ function updateSensors(dt=200){
             let lr = (i<8)?'left':'right';
             return lineString(...lineGraphPos[i], sensorHistory[lr], i%8);
         })
+    
+    // Update meters
+    const leftTotal = currentSamples.left.reduce((a,b)=>(a+b),0);
+    const rightTotal = currentSamples.right.reduce((a,b)=>(a+b),0);
+    const grandTotal = leftTotal+rightTotal;
+    const maxTotal = maxSample*8;
+
+    d3.select('#meter-levels').selectAll('rect')
+        .data([leftTotal,rightTotal])
+        .transition().duration(dt)
+        .attr('height', d=>d/maxTotal*meterH)
+        .attr('y', d=>meterH*(1-d/maxTotal))
+
+    d3.select('#total-level')
+        .transition().duration(dt)
+        .attr('height', grandTotal/maxTotal/2*meterH)
+        .attr('y', meterH*(1-grandTotal/maxTotal/2))
 }
 
 function newSensorData(isLeft,samples){
@@ -171,7 +238,7 @@ function newSensorData(isLeft,samples){
     sensorHistory[lr].splice(0,0,samples);
     if (sensorHistory[lr].length > maxHistory) sensorHistory[lr].pop();
 
-    updateSensors();
+    updateSensors(tDuration);
 }
 
 // Animate gradients in sync with bumps
@@ -221,7 +288,7 @@ function curvePointH(i){
     return [x,y,h];
 }
 
-updateSensors();
+updateSensors(0);
 
 // Array functions
 
