@@ -352,6 +352,10 @@ function lerp(a,b,t){
     return a+t*(b-a);
 }
 
+function arraySum(a1, a2){
+    return a1.map((d,i)=>d+a2[i])
+}
+
 function arrayDist(a1,a2){
     return Math.hypot(...arraySum(a1,a2.map(d=>-d)));
 }
