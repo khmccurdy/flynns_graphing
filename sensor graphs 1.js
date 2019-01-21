@@ -98,8 +98,7 @@ $svg.append('defs').attr('id','bump-gradients')
     .enter().append('linearGradient')
     .html($curveGradient.html())
     .attr('id', (d,i)=>'curveGradient'+i)
-    .attr('x1',0).attr('x2',0)
-    .attr('y1',1).attr('y2',0)
+    .call(attrs,'x1 y1 x2 y2',[0, 1, 0, 0])
 
 // Bump graphics
 $svg.append('g').attr('id','sensor-bumps')
@@ -128,9 +127,7 @@ $svg.append('defs').attr('id','line-gradients')
     .enter().append('radialGradient')
     .html($lineGradient.html())
     .attr('id', d=>`lineGradient${d[0]}-${d[1]}`)
-    .attr('cx',.5).attr('cy',.5)
-    .attr('fx',.5).attr('fy',.5)
-    .attr('r',.5)
+    .call(attrs,'cx cy fx vy r',arrayFill(5,.5))
 
 
 // Bump mesh-lines
@@ -221,18 +218,14 @@ function updateSensors(dt=200){
             let tx2 = curveW*(1-tanW)/2;
             return `M ${x} ${y} c ${tx1} 0, ${tx2} ${-h}, ${curveW/2} ${-h} s ${tx2} ${h}, ${curveW/2} ${h}`}
         );
-    
+
+    // Transition sensor dots
     $svg.select('#dots')
         .selectAll('circle').data(sensorArray)
         .transition().duration(dt)
         .attr('cy',(d,i)=>bumpPosY(i))
 
-    $svg.select('#lineFills')
-        .selectAll('circle').data(circleConnections)
-        .transition().duration(dt)
-        .attr('cy',d=>bumpPosY(d[0]))
-        .attr('r', d=>arrayDist([bumpPos[d[0]][0],bumpPosY(d[0])],[bumpPos[d[1]][0],bumpPosY(d[1])]))
-
+    // Transition mesh-lines
     $svg.select('#edges')
         .selectAll('path').data(circleConnections)
         .transition().duration(dt)
@@ -242,7 +235,18 @@ function updateSensors(dt=200){
     
             return `M ${x1+curveW/2} ${y1-h1} L ${x2+curveW/2} ${y2-h2}`
         })
-    
+
+    // Transition mesh-line gradient sizes
+    $svg.select('#lineFills')
+        .selectAll('circle').data(circleConnections)
+        .transition().duration(dt)
+        .attr('cy',d=>bumpPosY(d[0]))
+        .attr('r', d=>arrayDist(
+            [bumpPos [d[0]] [0], bumpPosY(d[0])],
+            [bumpPos [d[1]] [0], bumpPosY(d[1])]
+        ))
+
+    // Transition mesh-line gradient stops
     for (let d of circleConnections){
         d3.select(`#lineGradient${d[0]}-${d[1]}`)
             .selectAll('stop').data(d)
@@ -325,7 +329,8 @@ function lineString(x,y,sampleHistory,s=0){
         }
 
         str += i==0?'M ':'L ';
-        str += `${x+newX} ${y+graphHeight-p*dy} `;
+        str += `${x+newX} ${y+graphHeight-p*dy}`;
+        // str += `${x+oldX} ${y+graphHeight-p*dy} l ${newX-oldX} 0`
     }
     return str;
 }
@@ -341,7 +346,7 @@ function curvePointH(i){
 
 updateSensors(0);
 
-// Array functions
+// Array etc. helper functions
 
 function arrayFill(n, value, clone=true){
     if (typeof value != "object") clone=false;
@@ -358,4 +363,12 @@ function arraySum(a1, a2){
 
 function arrayDist(a1,a2){
     return Math.hypot(...arraySum(a1,a2.map(d=>-d)));
+}
+
+function attrs($obj, keys, values){
+    if (typeof keys == 'string') keys = keys.split(' ');
+
+    for (let i=0; i<keys.length; i++){
+        $obj.attr(keys[i],values[i])
+    }
 }
