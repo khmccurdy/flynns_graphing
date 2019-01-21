@@ -49,7 +49,7 @@ var rgbBump = '0,170,255'
 
 // Circle connections and colors
 var rgbDot = '200,0,0';
-var rgbLine = '200,200,150';
+var rgbLine = '200,200,130';
 var circleConnections = [[0,1],[0,4],[1,4],[1,5],[4,5],[3,6],[5,6],[8,10]]
 
 // Meter color
@@ -111,20 +111,54 @@ $svg.append('g').attr('id','sensor-bumps')
     .attr('id',(d,i)=>'sensorBump'+i)
     .attr('fill',(d,i)=>`url(#curveGradient${i})`)
 
-// Bump mesh and points
+// Bump line gradients
+var $lineGradient = $svg.append('defs').append('radialGradient')
+    .attr('id', 'lineGradientRef');
+
+$lineGradient.append('stop')
+    .attr('offset','0%')
+    .attr('stop-color',`rgba(${rgbLine},.2)`);
+$lineGradient.append('stop')
+    .attr('offset','100%')
+    .attr('stop-color',`rgba(${rgbLine},.8)`);
+
+$svg.append('defs').attr('id','line-gradients')
+    .selectAll('radialGradient')
+    .data(circleConnections)
+    .enter().append('radialGradient')
+    .html($lineGradient.html())
+    .attr('id', d=>`lineGradient${d[0]}-${d[1]}`)
+    .attr('cx',.5).attr('cy',.5)
+    .attr('fx',.5).attr('fy',.5)
+    .attr('r',.5)
+
+
+// Bump mesh-lines
 $svg.select('#sensor-bumps')
-    .append('g').attr('id','edges')
+    .append('defs').attr('id','edges')
     .selectAll('path').data(circleConnections)
-    .enter().append('path')
-    .attr('stroke',`rgba(${rgbLine},.8)`)
+    .enter().append('mask').attr('id',d=>`lineMask${d[0]}-${d[1]}`)
+    .append('path')
+    .attr('stroke','white')
     .attr('stroke-width',2)
     .attr('d',d=>{
         let [x1,y1,h1] = curvePointH(d[0]);
         let [x2,y2,h2] = curvePointH(d[1]);
-
         return `M ${x1+curveW/2} ${y1-h1} L ${x2+curveW/2} ${y2-h2}`
     })
 
+// Line gradients (masked by lines)
+$svg.select('#sensor-bumps')
+    .append('g').attr('id','lineFills')
+    .selectAll('circle').data(circleConnections)
+    .enter().append('circle')
+    .attr('r',d=>arrayDist(bumpPos[d[0]],bumpPos[d[1]]))
+    .attr('cx',d=>bumpPos[d[0]][0]+curveW/2)
+    .attr('cy',d=>bumpPos[d[0]][1])
+    .attr('fill',d=>`url(#lineGradient${d[0]}-${d[1]})`)
+    .attr('mask',d=>`url(#lineMask${d[0]}-${d[1]})`)
+
+// Bump points
 $svg.select('#sensor-bumps')
     .append('g').attr('id','dots')
     .selectAll('circle').data(arrayFill(16,0))
@@ -188,10 +222,16 @@ function updateSensors(dt=200){
             return `M ${x} ${y} c ${tx1} 0, ${tx2} ${-h}, ${curveW/2} ${-h} s ${tx2} ${h}, ${curveW/2} ${h}`}
         );
     
-    $svg.select('#sensor-bumps')
+    $svg.select('#dots')
         .selectAll('circle').data(sensorArray)
         .transition().duration(dt)
-        .attr('cy',(d,i)=>bumpPos[i][1]-d*maxCurveH/maxSample);
+        .attr('cy',(d,i)=>bumpPosY(i))
+
+    $svg.select('#lineFills')
+        .selectAll('circle').data(circleConnections)
+        .transition().duration(dt)
+        .attr('cy',d=>bumpPosY(d[0]))
+        .attr('r', d=>arrayDist([bumpPos[d[0]][0],bumpPosY(d[0])],[bumpPos[d[1]][0],bumpPosY(d[1])]))
 
     $svg.select('#edges')
         .selectAll('path').data(circleConnections)
@@ -202,6 +242,13 @@ function updateSensors(dt=200){
     
             return `M ${x1+curveW/2} ${y1-h1} L ${x2+curveW/2} ${y2-h2}`
         })
+    
+    for (let d of circleConnections){
+        d3.select(`#lineGradient${d[0]}-${d[1]}`)
+            .selectAll('stop').data(d)
+            .transition().duration(dt)
+            .attr('stop-color',id=>`rgba(${rgbLine},${sensorArray[id]/maxSample*.7+.2})`)
+    }
     
     // Update line graphs
     d3.select('#line-graphs').selectAll('path')
@@ -226,6 +273,10 @@ function updateSensors(dt=200){
         .transition().duration(dt)
         .attr('height', grandTotal/maxTotal/2*meterH)
         .attr('y', meterH*(1-grandTotal/maxTotal/2))
+    
+    function bumpPosY(i){
+        return bumpPos[i][1]-sensorArray[i]*maxCurveH/maxSample;
+    }
 }
 
 function newSensorData(isLeft,samples){
@@ -299,4 +350,8 @@ function arrayFill(n, value, clone=true){
 
 function lerp(a,b,t){
     return a+t*(b-a);
+}
+
+function arrayDist(a1,a2){
+    return Math.hypot(...arraySum(a1,a2.map(d=>-d)));
 }
