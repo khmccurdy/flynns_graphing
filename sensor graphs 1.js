@@ -207,7 +207,7 @@ function updateSensors(dt=200){
             let [x,y] = bumpPos[i];
             let tx1 = curveW*tanW/2;
             let tx2 = curveW*(1-tanW)/2;
-            return `M ${x} ${y} c ${tx1} 0, ${tx2} ${-h}, ${curveW/2} ${-h} s ${tx2} ${h}, ${curveW/2} ${h} M -10000 ${y-maxCurveH} l 1 0`}
+            return `M ${x} ${y} c ${tx1} 0 ${tx2} ${-h} ${curveW/2} ${-h} s ${tx2} ${h}, ${curveW/2} ${h} M -10000 ${y-maxCurveH} l 1 0`}
         );
 
     // Transition sensor dots

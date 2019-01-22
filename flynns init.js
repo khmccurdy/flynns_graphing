@@ -10,9 +10,9 @@ flynns.callbacks.push(newSensorData);
 var verifyInterval = 0;
 function verifyConnection(){
     if (flynns.left.isConnected || flynns.right.isConnected) {
-        stop(); 
         tDuration=80;
         clearTimeout(verifyInterval)
+        generating=false;
     }
 }
 
