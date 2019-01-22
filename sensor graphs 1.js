@@ -83,7 +83,8 @@ $graphs.append('path')
 
 // Bump gradients
 var $curveGradient = $svg.append('defs').append('linearGradient')
-    .attr('id', 'curveGradientRef');
+    .attr('id', 'curveGradientRef')
+    .call(attrs,'x1 y1 x2 y2',[0, 1, 0, 0]);
 
 $curveGradient.append('stop')
     .attr('offset','0%')
@@ -91,14 +92,6 @@ $curveGradient.append('stop')
 $curveGradient.append('stop')
     .attr('offset','100%')
     .attr('stop-color',`rgb(${rgbBump})`);
-
-$svg.append('defs').attr('id','bump-gradients')
-    .selectAll('linearGradient')
-    .data(arrayFill(16,0))
-    .enter().append('linearGradient')
-    .html($curveGradient.html())
-    .attr('id', (d,i)=>'curveGradient'+i)
-    .call(attrs,'x1 y1 x2 y2',[0, 1, 0, 0])
 
 // Bump graphics
 $svg.append('g').attr('id','sensor-bumps')
@@ -108,9 +101,9 @@ $svg.append('g').attr('id','sensor-bumps')
     .attr('stroke',`rgb(${rgbBump})`)
     .attr('stroke-width', 2)
     .attr('id',(d,i)=>'sensorBump'+i)
-    .attr('fill',(d,i)=>`url(#curveGradient${i})`)
+    .attr('fill',(d,i)=>`url(#curveGradientRef)`)
 
-// Bump line gradients
+// Bump mesh-line gradients
 var $lineGradient = $svg.append('defs').append('radialGradient')
     .attr('id', 'lineGradientRef');
 
@@ -129,7 +122,6 @@ $svg.append('defs').attr('id','line-gradients')
     .attr('id', d=>`lineGradient${d[0]}-${d[1]}`)
     .call(attrs,'cx cy fx vy r',arrayFill(5,.5))
 
-
 // Bump mesh-lines
 $svg.select('#sensor-bumps')
     .append('defs').attr('id','edges')
@@ -144,7 +136,7 @@ $svg.select('#sensor-bumps')
         return `M ${x1+curveW/2} ${y1-h1} L ${x2+curveW/2} ${y2-h2}`
     })
 
-// Line gradients (masked by lines)
+// Line gradient circles (masked by lines)
 $svg.select('#sensor-bumps')
     .append('g').attr('id','lineFills')
     .selectAll('circle').data(circleConnections)
@@ -206,7 +198,6 @@ function updateSensors(dt=200){
     var sensorArray = currentSamples.left.concat(currentSamples.right);
 
     // Transition sensor bumps
-    // Gradients are updated in a separate function
     d3.select('#sensor-bumps')
         .selectAll('path').data(sensorArray)
         .transition().duration(dt)
@@ -216,7 +207,7 @@ function updateSensors(dt=200){
             let [x,y] = bumpPos[i];
             let tx1 = curveW*tanW/2;
             let tx2 = curveW*(1-tanW)/2;
-            return `M ${x} ${y} c ${tx1} 0, ${tx2} ${-h}, ${curveW/2} ${-h} s ${tx2} ${h}, ${curveW/2} ${h}`}
+            return `M ${x} ${y} c ${tx1} 0, ${tx2} ${-h}, ${curveW/2} ${-h} s ${tx2} ${h}, ${curveW/2} ${h} M -10000 ${y-maxCurveH} l 1 0`}
         );
 
     // Transition sensor dots
@@ -295,17 +286,6 @@ function newSensorData(isLeft,samples){
 
     updateSensors(tDuration);
 }
-
-// Animate gradients in sync with bumps
-function updateGradients(){
-    for (let i=0;i<16;i++){
-        let d = d3.select('#sensorBump'+i).attr('sample-value');
-        d3.select('#curveGradient'+i)
-            .attr('gradientTransform',
-            `scale(1 ${d>0?maxSample/d:1}) translate(0 ${-1+d/maxSample})`);
-    }
-}
-setInterval(updateGradients,10);
 
 function lineString(x,y,sampleHistory,s=0){
     var str = '';
