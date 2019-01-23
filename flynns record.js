@@ -47,17 +47,12 @@ function recordSensorData(isLeft,samples){
 function flynnsReplay(r=sensorRecording){
     let t0 = Date.now();
     if (r==undefined) return console.warn('Parameter is uninitialized');
-    let ptoL, ptoR, rec;
+    let ptoL, ptoR;
     flynnsStopRecord();
     flynnsStopReplay();
 
-    if (typeof r != 'object'){
-        if (r === '') rec = sensorRecording;
-        else rec = sensorRecordingsNamed[r];
-    } else {
-        rec = r;
-    }
-    if (rec==undefined) return console.warn('Record object is uninitialized');
+    let rec = parseRec(r);
+    if (rec==undefined) return console.warn(`Record object is uninitialized`);
 
     flynnsClearCallback(newSensorData);
     generating = false;
@@ -90,4 +85,64 @@ function flynnsClearCallback(callback){
 function flynnsAddCallback(callback){
     const indexOfCallback = flynns.callbacks.indexOf(callback);
     if (indexOfCallback < 0) flynns.callbacks.push(callback);
+}
+
+function getSplitRecording(r=''){
+    let rec = parseRec(r);
+    if (!rec) return console.warn('Record object is uninitialized');
+
+    var result = {left:[],right:[],leftT:[],rightT:[]};
+
+    for (let lr of ['left','right']){
+        for (let sa of rec[lr]){
+            result[lr].push(Array.from(sa));
+            result[lr+'T'].push(sa.time);
+        }
+    }
+    return result;
+}
+
+function mergeSplitRecording(rec){
+    var result = {left:[],right:[]};
+
+    for (let lr of ['left','right']){
+        for (let i=0; i<rec[lr].length; i++){
+            let sa = Array.from(rec[lr][i]);
+            let t  = rec[lr+'T'][i];
+            sa.time=t;
+            result[lr].push(sa);
+        }
+    }
+    return result;
+}
+
+function exportRecording(r=sensorRecording, outputPath=''){
+    const recStr = JSON.stringify(getSplitRecording(r));
+
+    if (!outputPath){
+        const dateStr = new Date(Date.now()).toJSON().replace(':','h').replace(':','m').split('.')[0]+'s'
+        const rLabel = (r && typeof r=='string')?r+'_':'';
+        outputPath = `flynns_record_output_${rLabel}${dateStr}.json`
+    }
+
+    console.log(outputPath);
+    // To do: actually save a file
+}
+
+function loadRecording(url){
+    // To do: load json file as recStr
+    const recStr = "{\"left\":[],\"right\":[],\"leftT\":[],\"rightT\":[]}";
+    return mergeSplitRecording(JSON.parse(recStr));
+}
+
+function parseRec(r){
+    let rec;
+
+    if (typeof r != 'object'){
+        if (r === '') rec = sensorRecording;
+        else rec = sensorRecordingsNamed[r];
+    } else {
+        rec = r;
+    }
+    return rec;
 }
