@@ -36,6 +36,9 @@ for (let i=0; i<16; i++){
 var rgbStrings = ['10,30,200','200,1,20','20,150,100','0,200,0','200,150,8'];
 const rgbIndex = i=>rgbStrings[i%rgbStrings.length];
 
+// Flynn outline color
+var rgbSole = '80,120,80';
+
 // Bump positions and colors
 var bumpPos = [];
 for (let i=0; i<16; i++){
@@ -81,6 +84,25 @@ $graphs.append('path')
     .attr('stroke-width',2)
     .attr('fill','transparent');
 
+// Shoe Sensor bumps
+$svg.append('g').attr('id','sensor-bumps')
+    .attr('transform','translate(400 50)');
+
+// Shoe outlines
+$svg.select('#sensor-bumps')
+    .append('g').attr('id','shoe-soles')
+    .append('path').attr('id','shoe-shape')
+    .attr('d',"M 336.95 69.95 Q 337.3 85.6 321.05 98.45 306.85 109.6 288.6 112.95 273.25 115.85 254.35 113.7 237.15 111.7 223.2 106.5 206.95 100.45 183.3 97 164.15 94.3 150.45 94.4 123.4 94.7 104.25 99.5 75.05 106.8 53.5 107.2 23.65 107.8 11.85 94.95 2.5 84.8 2.6 73.9 2.7 63.85 10.75 54.4 18.35 45.45 31.65 38.7 44.95 32 60.85 28.95 76.55 26.05 127.1 17.75 153.6 13.45 188.85 7.75 211.15 4.15 234.65 3.3 268.7 2 286.45 7.95 309.85 15.9 322.75 31.05 336.4 47.1 336.95 69.95 Z")
+    .attr('stroke',`rgba(${rgbSole},.6)`)
+    // .attr('fill','rgba(50,200,40,.1)')
+    .attr('stroke-width',2)
+    .attr('transform','scale(1.4,1.4) rotate(3)')
+    .style('visibility','hidden') // Remove this line once sensors are arranged
+
+$svg.select('#shoe-soles')
+    .append('use').attr('href','#shoe-shape')
+    .attr('transform','scale(1,-1) translate(3,-380)')
+
 // Bump gradients
 var $curveGradient = $svg.append('defs').append('linearGradient')
     .attr('id', 'curveGradientRef')
@@ -94,8 +116,8 @@ $curveGradient.append('stop')
     .attr('stop-color',`rgb(${rgbBump})`);
 
 // Bump graphics
-$svg.append('g').attr('id','sensor-bumps')
-    .attr('transform','translate(400 50)')
+$svg.select('#sensor-bumps')
+    .append('g').attr('id','bump-curves')
     .selectAll('path').data(arrayFill(16,0))
     .enter().append('path')
     .attr('stroke',`rgb(${rgbBump})`)
@@ -198,7 +220,7 @@ function updateSensors(dt=200){
     var sensorArray = currentSamples.left.concat(currentSamples.right);
 
     // Transition sensor bumps
-    d3.select('#sensor-bumps')
+    d3.select('#bump-curves')
         .selectAll('path').data(sensorArray)
         .transition().duration(dt)
         .attr('sample-value',d=>d)
