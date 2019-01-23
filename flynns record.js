@@ -133,6 +133,17 @@ function printRecording(r=''){
     console.log(JSON.stringify(getSplitRecording(r)));
 }
 
+function textRecording(r=''){
+    const recStr = JSON.stringify(getSplitRecording(r));
+    var $text = d3.select('#record-out-text');
+    if ($text.empty()) {
+        $text = d3.select('div').append('p')
+            .attr('id','record-out-text')
+            .style('color','grey');
+    }
+    $text.text(recStr);
+}
+
 function loadRecording(url, name){
     d3.json(url,(e,d)=>{
         if (e) console.warn(e);

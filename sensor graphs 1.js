@@ -38,6 +38,7 @@ const rgbIndex = i=>rgbStrings[i%rgbStrings.length];
 
 // Flynn outline color
 var rgbSole = '80,120,80';
+var solesOffsetY = 380;
 
 // Bump positions and colors
 var bumpPos = [];
@@ -48,12 +49,23 @@ for (let i=0; i<16; i++){
     let y = Math.floor(i/4)*dy + Math.floor(i/8)*45+dy;
     bumpPos.push([x,y])
 }
+/*
+// for (let i=0; i<8; i++){
+//     let dx = curveW + 20;
+//     let dy = maxCurveH + 10;
+//     let x = (i%4)*dx + 20;
+//     let y = Math.floor(i/4)*dy +dy;
+//     bumpPos.push([x,y])
+// }
+bumpPos = [[200,300],[15,88],...] // (8 values)
+bumpPos = bumpPos.concat(bumpPos.map(([x,y])=>[x,solesOffsetY-y]));
+*/
 var rgbBump = '0,170,255'
 
 // Circle connections and colors
 var rgbDot = '200,0,0';
 var rgbLine = '200,200,130';
-var circleConnections = [[0,1],[0,4],[1,4],[1,5],[4,5],[3,6],[5,6],[8,10]]
+var circleConnections = [[0,1],[0,4],[1,4],[1,5],[4,5],[3,6],[5,6],[8,10]];
 
 // Meter color
 var rgbMeter = '220,50,18';
@@ -101,7 +113,7 @@ $svg.select('#sensor-bumps')
 
 $svg.select('#shoe-soles')
     .append('use').attr('href','#shoe-shape')
-    .attr('transform','scale(1,-1) translate(3,-380)')
+    .attr('transform',`scale(1,-1) translate(3,-${solesOffsetY})`)
 
 // Bump gradients
 var $curveGradient = $svg.append('defs').append('linearGradient')

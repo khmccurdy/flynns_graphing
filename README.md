@@ -11,8 +11,11 @@ The following code can be run from the browser's console. This allows recording 
 * To play back a stream of data stored in memory: `flynnsReplay('name')`. When done, `flynnsStopReplay()`. 
   * Input from the Flynns will be ignored until playback is stopped.
 * To save a recording's data for later use:
-  * `printRecording('name')` to dump JSON data to the console.
-  * Select the full output (may require expanding the twirl-down for longer outputs), copy and paste into a text editor.
+  * `printRecording('name')` to dump JSON data to the console OR `textRecording('name')` to render JSON as text below the graphs.
+  * Select the full output.
+    * If printed to console, may require expanding the twirl-down for longer outputs.
+    * If rendered to screen, simply select all text using Ctrl/Cmd+A (make sure you switch focus to the webpage itself, or you'll simply select the text from the Console's input).
+  * Copy and paste into a text editor.
   * Save the file in `.json` format.
 * To load a saved recording:
   * `loadRecording('filepath.json','name')` - beware of CORS permission errors.
