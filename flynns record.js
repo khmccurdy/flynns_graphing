@@ -129,10 +129,17 @@ function exportRecording(r=sensorRecording, outputPath=''){
     // To do: actually save a file
 }
 
-function loadRecording(url){
-    // To do: load json file as recStr
-    const recStr = "{\"left\":[],\"right\":[],\"leftT\":[],\"rightT\":[]}";
-    return mergeSplitRecording(JSON.parse(recStr));
+function printRecording(r=''){
+    console.log(JSON.stringify(getSplitRecording(r)));
+}
+
+function loadRecording(url, name){
+    d3.json(url,(e,d)=>{
+        if (e) console.warn(e);
+        sensorRecordingsNamed[name] = mergeSplitRecording(d);
+    })
+    // const recStr = "{\"left\":[],\"right\":[],\"leftT\":[],\"rightT\":[]}";
+    // mergeSplitRecording(JSON.parse(recStr));
 }
 
 function parseRec(r){
