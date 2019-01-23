@@ -6,9 +6,10 @@ Video recordings of this and similar demos will be posted [here](https://www.you
 
 **Recording, Playing Back, and Loading Data**
 
-The following code can be run from the browser's console.
+The following code can be run from the browser's console. This allows recording of data from the Flynns so that users without access to them can still load and observe real input.
 * To record a stream of data out of the Flynns for later use: `flynnsRecord('name')`. When done, `flynnsStopRecord()`.
-* To play back a stream of data stored in memory: `flynnsReplay('name')`. When done, `flynnsStopReplay()`.
+* To play back a stream of data stored in memory: `flynnsReplay('name')`. When done, `flynnsStopReplay()`. 
+  * Input from the Flynns will be ignored until playback is stopped.
 * To save a recording's data for later use:
   * `printRecording('name')` to dump JSON data to the console.
   * Select the full output (may require expanding the twirl-down for longer outputs), copy and paste into a text editor.
