@@ -14,6 +14,7 @@ function flynnsRecord(name=''){
         if (currentRecordName) console.warn(`'${currentRecordName}' will continue.`)
         return;
     }
+    flynnsStopReplay();
     currentRecordName = name;
     if (name) {
         sensorRecordingsNamed[name] = {left:[],right:[]}
@@ -47,6 +48,7 @@ function flynnsReplay(r=sensorRecording){
     let t0 = Date.now();
     if (r==undefined) return console.warn('Parameter is uninitialized');
     let ptoL, ptoR, rec;
+    flynnsStopRecord();
     flynnsStopReplay();
 
     if (typeof r != 'object'){
