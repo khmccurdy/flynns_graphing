@@ -42,14 +42,14 @@ var solesOffsetY = 380;
 
 // Bump positions and colors
 var bumpPos = [];
-for (let i=0; i<16; i++){
-    let dx = curveW + 20;
-    let dy = maxCurveH + 10;
-    let x = (i%4)*dx + 20;
-    let y = Math.floor(i/4)*dy + Math.floor(i/8)*45+dy;
-    bumpPos.push([x,y])
-}
-/*
+// for (let i=0; i<16; i++){
+//     let dx = curveW + 20;
+//     let dy = maxCurveH + 10;
+//     let x = (i%4)*dx + 20;
+//     let y = Math.floor(i/4)*dy + Math.floor(i/8)*45+dy;
+//     bumpPos.push([x,y])
+// }
+
 // for (let i=0; i<8; i++){
 //     let dx = curveW + 20;
 //     let dy = maxCurveH + 10;
@@ -57,15 +57,20 @@ for (let i=0; i<16; i++){
 //     let y = Math.floor(i/4)*dy +dy;
 //     bumpPos.push([x,y])
 // }
-bumpPos = [[200,300],[15,88],...] // (8 values)
-bumpPos = bumpPos.concat(bumpPos.map(([x,y])=>[x,solesOffsetY-y]));
-*/
+bumpPos = [[20,90],[20,130],[190,95],[330,65],[350,120],[20,10],[180,10],[340,10]] // (8 values)
+var bumpOrderR = [1,0,2,4,3,5,6,7]
+var bumpR = bumpOrderR.map(d=>[bumpPos[d][0],solesOffsetY-bumpPos[d][1]])
+bumpPos = bumpPos.concat(bumpR);
+
 var rgbBump = '0,170,255'
 
 // Circle connections and colors
 var rgbDot = '200,0,0';
 var rgbLine = '200,200,130';
-var circleConnections = [[0,1],[0,4],[1,4],[1,5],[4,5],[3,6],[5,6],[8,10]];
+var circleConnections = [[0,1],[1,2],[0,2],[2,3],[2,4],[3,4],[0,3]];
+// var ccR = bumpOrderR.map(d=>[circleConnections[d].map(n=>(n+8)%16)])
+var ccR = circleConnections.map(d=>d.map(n=>(bumpOrderR[n]+8)%16))
+circleConnections = circleConnections.concat(ccR)
 
 // Meter color
 var rgbMeter = '220,50,18';
@@ -109,7 +114,7 @@ $svg.select('#sensor-bumps')
     // .attr('fill','rgba(50,200,40,.1)')
     .attr('stroke-width',2)
     .attr('transform','scale(1.4,1.4) rotate(3)')
-    .style('visibility','hidden') // Remove this line once sensors are arranged
+    // .style('visibility','hidden') // Remove this line once sensors are arranged
 
 $svg.select('#shoe-soles')
     .append('use').attr('href','#shoe-shape')
