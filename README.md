@@ -1,8 +1,8 @@
-This should work with the Flynns. If it doesn't find them, it generates randomized data. Graph arrangements are far from final and will be adjusted to reflect the positioning of their respective sensors.
+This should work with the Flynns. If it doesn't find them, it generates randomized data. Graph arrangements generally reflect the positioning of their respective sensors - new profiles will be added as the prototypes evolve.
 
 [Try it!](https://khmccurdy.github.io/flynns_graphing/sensor%20data%201.html)
 
-Video recordings of this and similar demos will be posted [here](https://www.youtube.com/channel/UCbrhYUVkQWcBhaPzl_J6kYA).
+<!-- Video recordings of this and similar demos will be posted [here](https://www.youtube.com/channel/UCbrhYUVkQWcBhaPzl_J6kYA). -->
 
 **Recording, Playing Back, and Loading Data**
 

@@ -1,4 +1,4 @@
-const isOldPrototype = true;
+const isOldPrototype = false;
 
 const FLYNNS_LEFT = {
     serviceUUID : (isOldPrototype)? "0000ffe0-0000-1000-8000-00805f9b34fb" : "4fafc201-1fb5-459e-8fcc-c5c9c331914b",
