@@ -315,7 +315,8 @@ function updateSensors(dt=200){
 
 function newSensorData(isLeft,samples){
     let t1 = Date.now()-t0;
-    samples=samples.slice();
+    // Robust against different numbers of sensors
+    samples=samples.length==8?samples.slice():samples.concat(arrayFill(8,0)).slice(0,8);
     samples.time = t1;
 
     let lr = isLeft?'left':'right';
