@@ -20,17 +20,31 @@ var meterW = 35;
 var meterH = 140;
 var meterSpacing = 25;
 
+var sensorsPerSole = 8;
+
+switch (shapeProfile){
+    case ('something'):
+        // Here we'd put more sensors eventually
+        // sensorsPerSole = 16;
+        // break;
+    default:
+        // Do nothing, it's already set to 8.
+}
+const sps = sensorsPerSole;
+const sTot = 2*sps;
+const sHalf = Math.ceil(sps/2);
+
 var t0 = Date.now()
 var sensorHistory = {left:[], right:[]};
 // [[1,3,4,20,30.., time=234234]]
-var currentSamples = {left: arrayFill(8,0), right: arrayFill(8,0)};
+var currentSamples = {left: arrayFill(sps,0), right: arrayFill(sps,0)};
 
 // Line graph positions and colors
 var lineGraphPos = []
-for (let i=0; i<16; i++){
+for (let i=0; i<sTot; i++){
     let boxDist = graphHeight+graphSpacing;
-    let x = Math.floor(i/4)*boxDist + graphSpacing*(1+Math.floor(i/8));
-    let y = (i%4)*boxDist + graphSpacing;
+    let x = Math.floor(i/sps*2)*boxDist + graphSpacing*(1+Math.floor(i/sps));
+    let y = ((i%sps)%sHalf)*boxDist + graphSpacing;
     lineGraphPos.push([x,y])
 }
 var rgbStrings = ['10,30,200','200,1,20','20,150,100','0,200,0','200,150,8'];
@@ -53,15 +67,15 @@ switch (shapeProfile){
         bumpPos = bumpPos.concat(bumpR);
 
         circleConnections = [[0,1],[1,2],[0,2],[2,3],[2,4],[3,4],[0,3]];
-        let ccR = circleConnections.map(d=>d.map(n=>(bumpOrderR[n]+8)%16));
+        let ccR = circleConnections.map(d=>d.map(n=>(bumpOrderR[n]+sps)%sTot));
         circleConnections = circleConnections.concat(ccR);
         break;
     default:
-        for (let i=0; i<16; i++){
+        for (let i=0; i<sTot; i++){
             let dx = curveW + 20;
             let dy = maxCurveH + 10;
-            let x = (i%4)*dx + 20;
-            let y = Math.floor(i/4)*dy + Math.floor(i/8)*45+dy;
+            let x = ((i%sps)%sHalf)*dx + 20;
+            let y = Math.floor(i/sps*2)*dy + Math.floor(i/sps)*45+dy;
             bumpPos.push([x,y])
         }
         circleConnections = [[0,1],[0,4],[1,4],[1,5],[4,5],[3,6],[5,6],[8,10]];
@@ -82,7 +96,7 @@ var rgbTotalMeter = '220,130,30'
 let $graphs = $svg.append('g')
     .attr('id','line-graphs')
     .selectAll('path')
-    .data(arrayFill(16,0)).enter();
+    .data(arrayFill(sTot,0)).enter();
 
 $graphs.append('rect')
     .attr('x',(d,i)=>lineGraphPos[i][0]-boxPad)
@@ -135,7 +149,7 @@ $curveGradient.append('stop')
 // Bump graphics
 $svg.select('#sensor-bumps')
     .append('g').attr('id','bump-curves')
-    .selectAll('path').data(arrayFill(16,0))
+    .selectAll('path').data(arrayFill(sTot,0))
     .enter().append('path')
     .attr('stroke',`rgb(${rgbBump})`)
     .attr('stroke-width', 2)
@@ -189,7 +203,7 @@ $svg.select('#sensor-bumps')
 // Bump points
 $svg.select('#sensor-bumps')
     .append('g').attr('id','dots')
-    .selectAll('circle').data(arrayFill(16,0))
+    .selectAll('circle').data(arrayFill(sTot,0))
     .enter().append('circle')
     .attr('fill',`rgb(${rgbDot})`).attr('r',dotRadius)
     .attr('cx',(d,i)=>bumpPos[i][0]+curveW/2)
@@ -287,15 +301,15 @@ function updateSensors(dt=200){
     // Update line graphs
     d3.select('#line-graphs').selectAll('path')
         .attr('d',(d,i)=>{
-            let lr = (i<8)?'left':'right';
-            return lineString(...lineGraphPos[i], sensorHistory[lr], i%8);
+            let lr = (i<sps)?'left':'right';
+            return lineString(...lineGraphPos[i], sensorHistory[lr], i%sps);
         })
     
     // Update meters
     const leftTotal = currentSamples.left.reduce((a,b)=>(a+b),0);
     const rightTotal = currentSamples.right.reduce((a,b)=>(a+b),0);
     const grandTotal = leftTotal+rightTotal;
-    const maxTotal = maxSample*8;
+    const maxTotal = maxSample*sps;
 
     d3.select('#meter-levels').selectAll('rect')
         .data([leftTotal,rightTotal])
@@ -316,7 +330,7 @@ function updateSensors(dt=200){
 function newSensorData(isLeft,samples){
     let t1 = Date.now()-t0;
     // Robust against different numbers of sensors
-    samples=samples.length==8?samples.slice():samples.concat(arrayFill(8,0)).slice(0,8);
+    samples=samples.length==sps?samples.slice():samples.concat(arrayFill(sps,0)).slice(0,sps);
     samples.time = t1;
 
     let lr = isLeft?'left':'right';
@@ -357,8 +371,8 @@ function lineString(x,y,sampleHistory,s=0){
 }
 
 function curvePointH(i){
-    let lr = i<8?'left':'right';
-    let d = currentSamples[lr][i%8];
+    let lr = i<sps?'left':'right';
+    let d = currentSamples[lr][i%sps];
 
     let h = d*maxCurveH/maxSample;
     let [x,y] = bumpPos[i]
