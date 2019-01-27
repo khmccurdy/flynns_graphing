@@ -49,10 +49,10 @@ function connect(isLeft = true) {
     .then(service => service.getCharacteristic(characteristicUUID))
     .then(characteristic => {
         flynns[(isLeft? "left":"right")].isConnected = true;
-        const button = isLeft?
-            connectLeftButton :
-            connectRightButton;
-        document.body.removeChild(button);
+        // const button = isLeft?
+        //     connectLeftButton :
+        //     connectRightButton;
+        // document.body.removeChild(button);
 
         characteristic.startNotifications()
         .then(characteristic => characteristic.addEventListener("characteristicvaluechanged", (event) => {
@@ -70,5 +70,8 @@ function connect(isLeft = true) {
     
             flynns.callbacks.forEach(callback => callback(isLeft, flynns[isLeft? "left":"right"].samples));
         }))
+
+        // New: Update svg button color
+        connectSuccess(isLeft? "left":"right");
     })
 }

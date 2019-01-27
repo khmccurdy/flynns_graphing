@@ -54,6 +54,24 @@ const rgbIndex = i=>rgbStrings[i%rgbStrings.length];
 var rgbSole = '80,120,80';
 var solesOffsetY = 380;
 
+var rgbConnectBtn = {
+    inactive: '80,110,130',
+    active: '15,170,235',
+}
+var alphaConnectBtn = {
+    out : .7,
+    over: .9,
+    down: .8,
+    up: .9 // Same as over, really
+}
+
+var durationConnectBtn = {
+    out: 500,
+    over: 300,
+    down: 80,
+    up: 150,
+}
+
 // Bump positions / connections and colors
 var bumpPos = [];
 var circleConnections = [];
@@ -89,6 +107,7 @@ var rgbLine = '200,200,130';
 // Meter color
 var rgbMeter = '220,50,18';
 var rgbTotalMeter = '220,130,30'
+var [meterX, meterY] = [sps>10?330:50, sps>8?450:310]//;sps>8?[300, 410]:[50, 310];
 
 // D3 SVG elements
 
@@ -209,9 +228,51 @@ $svg.select('#sensor-bumps')
     .attr('cx',(d,i)=>bumpPos[i][0]+curveW/2)
     .attr('cy',(d,i)=>bumpPos[i][1]);
 
+// Shoe switches
+$svg.select('#sensor-bumps').append('g')
+    .attr('id','connect-buttons').selectAll('circle')
+    .data(['left','right']).enter()
+    .append('circle').attr('id',lr=>'connect-btn-'+lr)
+    .attr('r',8).attr('cx',-40)
+    .attr('cy',(d,i)=>(i+.5)*solesOffsetY/2)
+    .attr('fill',d=>`rgba(${rgbConnectBtn.inactive},${alphaConnectBtn.out})`)
+    .on('mouseover',d=>{connectMouseEvent(d,'over')}).on('mousedown',d=>{connectMouseEvent(d,'down')})
+    .on('mouseout',d=>{connectMouseEvent(d,'out')}).on('click',d=>{connectMouseEvent(d,'up')})
+
+function connectMouseEvent(lr, eventType){
+    const active = flynns[lr].isConnected;
+    const rgb = rgbConnectBtn[active?'active':'inactive'];
+    d3.select('#connect-btn-'+lr).transition()
+        .duration(durationConnectBtn[eventType])
+        .attr('fill',`rgba(${rgb},${alphaConnectBtn[active?'over':eventType]})`)
+
+    if (eventType=='up') connect(lr=='left');
+}
+
+function connectSuccess(lr){
+    connectMouseEvent(lr,'over');
+    d3.select('#connect-btn-'+lr).attr('filter','url(#btn-glow)');
+}
+
+$svg.select('#sensor-bumps').append('defs')
+    .append('filter').attr('id','btn-glow')
+    .attr('width','200%').attr('height','200%')
+    .attr('x',-.5).attr('y',-.5)
+
+$svg.select('#btn-glow').append('feGaussianBlur')
+    .attr('in','SourceGraphic').attr('result','blurred')
+    .attr('stdDeviation',6)
+
+$svg.select('#btn-glow').append('feComponentTransfer')
+    .attr('in','blurred').attr('result','glow')
+    .append('feFuncA').attr('type','linear').attr('slope',.6)
+
+$svg.select('#btn-glow').append('feBlend')
+    .attr('in','SourceGraphic').attr('in2','glow')
+    // .attr('mode','normal')
 // Meters
 $svg.append('g').attr('id','meters')
-    .attr('transform','translate(50, 310)')
+    .attr('transform',`translate(${meterX}, ${meterY})`)
     .selectAll('rect').data([0,0])
     .enter().append('rect')
     .attr('x',(d,i)=>i*(meterW+meterSpacing))
