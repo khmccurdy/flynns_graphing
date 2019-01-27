@@ -2,6 +2,8 @@ This should work with the Flynns. If it doesn't find them, it generates randomiz
 
 [Try it!](https://khmccurdy.github.io/flynns_graphing/sensor%20data%201.html)
 
+Demo of sensors in action: [Video 1](https://www.linkedin.com/feed/update/urn:li:activity:6494716930900004864/), [Video 2](https://www.instagram.com/p/BtFvshJhY2J/)
+
 <!-- Video recordings of this and similar demos will be posted [here](https://www.youtube.com/channel/UCbrhYUVkQWcBhaPzl_J6kYA). -->
 
 **Recording, Playing Back, and Loading Data**
