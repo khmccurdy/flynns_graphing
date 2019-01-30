@@ -20,7 +20,7 @@ The following code can be run from the browser's console. This allows recording 
   * Copy and paste into a text editor.
   * Save the file in `.json` format.
 * To load a saved recording:
-  * `loadRecording('filepath.json','name')` - beware of CORS permission errors.
+  * `loadRecording('sample_recording.json','name')` - beware of CORS permission errors.
     * If both the file and `sensor data 1.html` are hosted locally, you may need to run through `localhost`.
     * If the file is hosted on the web, the request may or may not succeed depending on how the host website is configured.
   * `flynnsReplay('name')` to play back the loaded test.
